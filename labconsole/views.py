@@ -39,10 +39,12 @@ def index(request):
        user = ""
     search = {"tags":"student=" + user}
     projects = {}
-    for project in conn.identity.projects(**search):
-       projects[project.name] = []
-       for vm in conn.compute.servers(all_tenants=1,project_id=project.id):
-           projects[project.name].append(vm)
+    for project in conn.identity.projects():
+        for tag in project.tags:
+            if user in tag:
+                projects[project.name] = []
+                for vm in conn.compute.servers(all_tenants=1,project_id=project.id):
+                    projects[project.name].append(vm)
 
     return render(request, 'index.html', {'projects': projects, 'user': user })
     #return render(request, 'welcome/index.html', {
@@ -92,7 +94,6 @@ def unrescue_vm(request, server):
     conn = _connect()
     conn.compute.unrescue_server(server)
     return HttpResponse(1)
-
 
 
 def console(request, server):
